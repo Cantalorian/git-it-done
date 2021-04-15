@@ -1,7 +1,25 @@
 var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
+var repoNameEl = document.querySelector("#repo-name");
 
-var displayWarning = function(repo) {
+
+var getRepoName = function () {
+  // grab repo name from url query string
+  var queryString = document.location.search;
+  var repoName = queryString.split("=")[1];
+
+  if(repoName) {
+    // display repo name on the page
+  repoNameEl.textContent = repoName;
+
+  getRepoIssues(repoName);
+  } else {
+    // if no repo was given, redirect to the homepage
+    document.location.replace("./index.html");
+  }
+};
+
+var displayWarning = function (repo) {
   // add text to warning container
   limitWarningEl.textContent = "To see more than 30 issues, visit ";
 
@@ -14,13 +32,13 @@ var displayWarning = function(repo) {
   limitWarningEl.appendChild(linkEl);
 };
 
-var getRepoIssues = function(repo) {
+var getRepoIssues = function (repo) {
   var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
 
-  fetch(apiUrl).then(function(response) {
+  fetch(apiUrl).then(function (response) {
     // request was successful
     if (response.ok) {
-      response.json().then(function(data) {
+      response.json().then(function (data) {
         // pass response data to dom function
         displayIssues(data);
 
@@ -30,12 +48,12 @@ var getRepoIssues = function(repo) {
         }
       });
     } else {
-      alert("There was a problem with your request!");
+      document.location.replace("./index.html");
     }
   });
 };
 
-var displayIssues = function(issues) {
+var displayIssues = function (issues) {
   if (issues.length === 0) {
     issueContainerEl.textContent = "This repo has no open issues!";
     return;
@@ -49,25 +67,24 @@ var displayIssues = function(issues) {
     // create span to hold issue title
     var titleEl = document.createElement("span");
     titleEl.textContent = issues[i].title;
-    
+
     // append to container
     issueEl.appendChild(titleEl);
-    
+
     // create a type element
     var typeEl = document.createElement("span");
-    
+
     // check if issue is an actual issue or a pull request
     if (issues[i].pull_request) {
-      typeEl.textContent= "(Pull request)";
+      typeEl.textContent = "(Pull request)";
     } else {
       typeEl.textContent = "(Issue)";
     }
-    
+
     // append to container
     issueEl.appendChild(typeEl);
     issueContainerEl.appendChild(issueEl);
   }
-
 };
 
-getRepoIssues("facebook/react");
+getRepoName()
